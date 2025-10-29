@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Firebase Auth & FastAPI Token Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      input {
+        margin-bottom: 10px;
+        padding: 8px;
+        width: 300px;
+      }
+      button {
+        padding: 10px 15px;
+        cursor: pointer;
+      }
+      textarea {
+        width: 100%;
+        height: 100px;
+        margin-top: 10px;
+      }
+      .result-box {
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        padding: 15px;
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>1. Firebase 로그인 (토큰 발급)</h1>
+    <p>테스트 계정(이메일, 비밀번호)을 입력하고 로그인하세요.</p>
+
+    <input type="email" id="email" placeholder="Firebase에 등록된 이메일" />
+    <input type="password" id="password" placeholder="비밀번호" />
+    <button onclick="loginAndGetToken()">로그인 및 토큰 발급</button>
+
+    <div class="result-box" id="token-box">
+      <p><strong>발급된 ID 토큰:</strong></p>
+      <textarea
+        id="id-token-area"
+        readonly
+        placeholder="로그인 성공 시 토큰이 여기에 표시됩니다."
+      ></textarea>
+    </div>
+
+    <h1>2. FastAPI 백엔드 테스트</h1>
+    <button onclick="testBackendAuth()">FastAPI 서버 인증 테스트</button>
+
+    <div class="result-box" id="backend-result">
+      <p><strong>백엔드 응답:</strong></p>
+      <pre id="response-data"></pre>
+    </div>
+
+    <!-- ✅ Firebase SDKs (compat 버전) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+
+    <script>
+      // --------------------------------------------------------------------------------
+      // ✅ Firebase 웹 앱 설정 (Firebase Console > 프로젝트 설정 > 일반 탭에서 복사)
+      // --------------------------------------------------------------------------------
+      const firebaseConfig = {
+        apiKey: "AIzaSyDDsRrZmEd-i8XjInS1uU2ums0U3dKJoz4",
+        authDomain: "publicenterprise-e6284.firebaseapp.com",
+        projectId: "publicenterprise-e6284",
+        storageBucket: "publicenterprise-e6284.appspot.com", // ✅ 수정 완료 (.appspot.com)
+        messagingSenderId: "1060350791473",
+        appId: "1:1060350791473:web:f5793e13ba0bc40b20ea10",
+        measurementId: "G-7E39XJFXFH",
+      };
+
+      // --------------------------------------------------------------------------------
+      // ✅ Firebase 초기화
+      // --------------------------------------------------------------------------------
+      const app = firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+
+      // FastAPI 서버 주소
+      const FASTAPI_URL = "http://127.0.0.1:8000";
+      let currentIdToken = ""; // 전역 저장용
+
+      // --------------------------------------------------------------------------------
+      // ✅ 1단계: Firebase 로그인 및 ID 토큰 발급
+      // --------------------------------------------------------------------------------
+      async function loginAndGetToken() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const tokenArea = document.getElementById("id-token-area");
+        tokenArea.value = "로그인 중...";
+
+        try {
+          const userCredential = await auth.signInWithEmailAndPassword(
+            email,
+            password
+          );
+          const user = userCredential.user;
+          const idToken = await user.getIdToken(); // Firebase ID 토큰 발급
+          currentIdToken = idToken;
+          tokenArea.value = idToken;
+          alert("✅ 로그인 성공! 토큰이 발급되었습니다.");
+        } catch (error) {
+          tokenArea.value = "❌ 로그인 실패: " + error.message;
+          console.error(error);
+        }
+      }
+
+      // --------------------------------------------------------------------------------
+      // ✅ 2단계: FastAPI 서버로 토큰 전달 및 인증 테스트
+      // --------------------------------------------------------------------------------
+      async function testBackendAuth() {
+        const responseData = document.getElementById("response-data");
+
+        if (!currentIdToken) {
+          responseData.textContent = "❌ 먼저 로그인하여 토큰을 발급받으세요.";
+          return;
+        }
+
+        try {
+          responseData.textContent = "FastAPI 인증 테스트 중...";
+
+          const response = await fetch(`${FASTAPI_URL}/users/me`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${currentIdToken}`,
+            },
+          });
+
+          const data = await response.json();
+          responseData.textContent = JSON.stringify(data, null, 2);
+
+          if (response.ok) {
+            responseData.textContent =
+              `✅ [성공] Status ${response.status}\n\n` +
+              responseData.textContent;
+          } else {
+            responseData.textContent =
+              `❌ [실패] Status ${response.status}\n\n` +
+              responseData.textContent;
+          }
+        } catch (error) {
+          responseData.textContent = `❌ 서버 연결 실패: ${error.message}\nFastAPI 서버가 실행 중인지 확인하세요.`;
+          console.error(error);
+        }
+      }
+    </script>
+  </body>
+</html>

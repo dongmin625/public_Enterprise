@@ -1,0 +1,42 @@
+# 🧩 가상환경
+venv/
+ENV/
+
+# 🔐 환경변수
+.env
+
+# 🐍 Python 캐시 / 빌드 파일
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+build/
+dist/
+
+# 🧠 IDE / 에디터 설정
+.vscode/
+.idea/
+
+# 🪵 로그 / 임시 파일
+*.log
+*.tmp
+
+# 🍎 macOS / Windows 관련
+.DS_Store
+Thumbs.db
+
+# 🔐 민감한 키 (Firebase 등)
+public-job-backend/cred/
+*.key
+*.pem
+
+# ⚙️ Node.js (프론트엔드 및 백엔드 JS 관련)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# 📦 Node 패키지 파일은 필요하므로 커밋
+# (package.json, package-lock.json 은 포함됨)
+!package.json
+!package-lock.json
