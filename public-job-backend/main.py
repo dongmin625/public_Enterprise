@@ -1,14 +1,31 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware # 1. CORS 임포트
 from app.database import Base, engine
 from app.routers import postings
-from app.routers import users  # 사용자 라우터 임포트
+from app.routers import users # 사용자 라우터 임포트
 
 # DB 테이블 생성
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Public Jobs API", version="1.0")
 
-# 라우터 등록
+# ↓↓↓↓ 2. CORS 미들웨어 등록 (가장 먼저 위치해야 함) ↓↓↓↓
+
+origins = [
+    "http://127.0.0.1:5500",  # Live Server 포트
+    "http://localhost:5500",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,              # 허용할 출처 목록
+    allow_credentials=True,             # 쿠키 허용
+    allow_methods=["*"],                # 모든 HTTP 메서드 허용 (OPTIONS, GET, POST 등)
+    allow_headers=["*"],                # 모든 헤더 허용 (Authorization 헤더 포함)
+)
+# ↑↑↑↑ CORS 미들웨어는 여기에 있어야 합니다 ↑↑↑↑
+
+# 3. 라우터 등록 (CORS 미들웨어 등록 후)
 app.include_router(postings.router)
 # 사용자 라우터 등록
 app.include_router(users.router)
