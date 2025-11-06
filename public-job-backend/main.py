@@ -12,8 +12,9 @@ app = FastAPI(title="Public Jobs API", version="1.0")
 # ↓↓↓↓ 2. CORS 미들웨어 등록 (가장 먼저 위치해야 함) ↓↓↓↓
 
 origins = [
-    "http://127.0.0.1:5500",  # Live Server 포트
-    "http://localhost:5500",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://192.168.35.109:3000",
 ]
 
 app.add_middleware(
