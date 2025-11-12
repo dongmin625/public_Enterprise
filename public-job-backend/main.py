@@ -12,9 +12,11 @@ app = FastAPI(title="Public Jobs API", version="1.0")
 # ↓↓↓↓ 2. CORS 미들웨어 등록 (가장 먼저 위치해야 함) ↓↓↓↓
 
 origins = [
-    "http://localhost:3000",
+    # 기존 로컬 개발 주소 유지
     "http://127.0.0.1:3000",
+    "http://localhost:3000",
     "http://192.168.35.109:3000",
+    "http://public-job-frontend-dongmin.s3-website.ap-northeast-2.amazonaws.com",
 ]
 
 app.add_middleware(
